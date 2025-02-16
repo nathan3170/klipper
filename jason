@@ -1,0 +1,30 @@
+name: Build Klipper for SKR Mini E3 V3
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Klipper Repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: sudo apt update && sudo apt install -y make gcc-arm-none-eabi
+
+      - name: Configure Klipper for SKR Mini E3 V3
+        run: |
+          make menuconfig <<EOF
+          STM32
+          STM32G0B1
+          8KiB bootloader
+          USB (on PA11/PA12)
+          EOF
+
+      - name: Compile Firmware
+        run: make -j4
+
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: klipper-firmware
+          path: out/klipper.bin
